@@ -71,7 +71,14 @@ namespace SQLProto.Parser
                     if (item != null)
                     {
                         var name = code.Substring(itemStart, position - itemStart);
-
+                        if (TryFindWord().ToLowerInvariant() == "as")
+                        {
+                            FindWord();
+                            name = FindWord();
+                        }
+                        SkipWhiteChars();
+                        if (position < code.Length && code[position] == ',')
+                            this.position++;
                         query.Selects.Add(new Expressions.Literals.NamedExpression(name, item));
                     }
                 }
@@ -196,7 +203,7 @@ namespace SQLProto.Parser
             if (arr == null) return false;
             foreach (var x in arr)
             {
-                if (this.code.Substring(this.position, x.Length) == x)
+                if (this.position + x.Length < this.code.Length && this.code.Substring(this.position, x.Length) == x)
                 {
                     return true;
                 }
@@ -231,6 +238,51 @@ namespace SQLProto.Parser
                 this.position++;
             }
             return word;
+        }
+        string TryFindWord()
+        {
+            string word = "";
+            var position = this.position;
+            while (true)
+            {
+                if (this.position == this.code.Length)
+                    return "";
+                var character = this.code[this.position];
+                if (!this.IsWhiteChar(character))
+                    break;
+
+                position++;
+            }
+            while (position < this.code.Length)
+            {
+                var character = this.code[this.position];
+                if (this.IsWhiteChar(character))
+                {
+                    break;
+                }
+                if (this.IsSpecialChar(character))
+                {
+                    break;
+                }
+                word += character;
+                position++;
+            }
+            return word;
+        }
+        void SkipWhiteChars()
+        {
+            while (position < code.Length)
+            {
+                var currentChar = code[position];
+                if (this.IsWhiteChar(currentChar))
+                {
+                    this.position++;
+                }
+                else
+                {
+                    return;
+                }
+            }
         }
     }
 }

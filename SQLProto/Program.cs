@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLProto.Parser.Queries;
+using System;
 
 namespace SQLProto
 {
@@ -6,9 +7,11 @@ namespace SQLProto
     {
         static void Main(string[] args)
         {
-            var testQuery = "Select 2+2";
+            var testQuery = "Select 1,2,3";
             var parser = new Parser.Parser(testQuery);
             var parsedQuery=parser.ReadQuery();
+            var schema = (parsedQuery as Select).GetSchema();
+            var row= (parsedQuery as Select).ExecuteRow();
         }
     }
 }
