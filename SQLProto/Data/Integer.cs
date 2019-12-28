@@ -11,5 +11,9 @@ namespace SQLProto.Data
         {
             _value = value;
         }
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
     }
 }
