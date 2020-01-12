@@ -12,7 +12,8 @@ namespace SQLProto.Parser
     {
         private string code;
         private int position;
-        private static string[] keywords = { "as" };
+        private static string[] keywords = {"as"};
+
         public Parser(string code)
         {
             this.code = code;
@@ -35,7 +36,6 @@ namespace SQLProto.Parser
                 }
                 else
                 {
-
                     var word = this.FindWord();
                     switch (word.ToLower())
                     {
@@ -47,8 +47,10 @@ namespace SQLProto.Parser
                     }
                 }
             }
+
             return finded;
         }
+
         Select ReadSelect(IEnumerable<string> escapeStrings = null)
         {
             var query = new Select();
@@ -67,7 +69,7 @@ namespace SQLProto.Parser
                 else
                 {
                     var itemStart = position;
-                    var item = readNormal(new string[] { ",", "as" });
+                    var item = readNormal(new string[] {",", "as"});
                     if (item != null)
                     {
                         var name = code.Substring(itemStart, position - itemStart);
@@ -76,6 +78,7 @@ namespace SQLProto.Parser
                             FindWord();
                             name = FindWord();
                         }
+
                         SkipWhiteChars();
                         if (position < code.Length && code[position] == ',')
                             this.position++;
@@ -83,12 +86,13 @@ namespace SQLProto.Parser
                     }
                 }
             }
+
             return query;
         }
 
-        IExpression readNormal(IEnumerable<string> escapeStrings = null)
+        IExpression readNormal(IEnumerable<string> escapeStrings = null, int escapePrecedence = 0)
         {
-            IExpression finded = null;//todo zrobić stack z tego
+            IExpression? finded = null; //todo zrobić stack z tego
             while (position < code.Length)
             {
                 var currentChar = code[position];
@@ -97,10 +101,24 @@ namespace SQLProto.Parser
                     this.position++;
                     continue;
                 }
+
                 if (this.IsAnyOfArray(escapeStrings))
                 {
                     return finded;
                 }
+
+                var oper = TryFindOperator();
+                if (oper != null)
+                {
+                    if (oper.Precedence <= escapePrecedence)
+                        return finded;
+
+                    this.position += oper.Coded.Length;
+                    var right = readNormal(escapeStrings, oper.Precedence);
+                    finded = OperatorExpression.Create(oper, finded, right);
+                    continue;
+                }
+
                 if (this.IsSpecialChar(currentChar))
                 {
                     switch (currentChar)
@@ -127,8 +145,6 @@ namespace SQLProto.Parser
                         if (keywords.Contains(word.ToLowerInvariant()))
                             switch (word.ToLower())
                             {
-
-
                                 default:
                                     throw new SyntaxError("unexpected keyword");
                             }
@@ -140,6 +156,7 @@ namespace SQLProto.Parser
                     }
                 }
             }
+
             return finded;
         }
 
@@ -186,6 +203,7 @@ namespace SQLProto.Parser
                     break;
                 }
             }
+
             return number;
         }
 
@@ -193,11 +211,24 @@ namespace SQLProto.Parser
         {
             return new Regex("\\s").IsMatch(character.ToString());
         }
+
         bool IsSpecialChar(char character)
         {
-            return false;//todo
+            return false; //todo
             //return Syntax.SpecialChars.includes(char);
         }
+
+        OperatorDefinition? TryFindOperator()
+        {
+            foreach (var x in OperatorDefinition.All)
+            {
+                if (code.Substring(this.position, x.Coded.Length) == x.Coded)
+                    return x;
+            }
+
+            return null;
+        }
+
         bool IsAnyOfArray(IEnumerable<string> arr)
         {
             if (arr == null) return false;
@@ -208,8 +239,10 @@ namespace SQLProto.Parser
                     return true;
                 }
             }
+
             return false;
         }
+
         string FindWord()
         {
             string word = "";
@@ -223,6 +256,7 @@ namespace SQLProto.Parser
 
                 this.position++;
             }
+
             while (this.position < this.code.Length)
             {
                 var character = this.code[this.position];
@@ -230,15 +264,19 @@ namespace SQLProto.Parser
                 {
                     break;
                 }
+
                 if (this.IsSpecialChar(character))
                 {
                     break;
                 }
+
                 word += character;
                 this.position++;
             }
+
             return word;
         }
+
         string TryFindWord()
         {
             string word = "";
@@ -253,6 +291,7 @@ namespace SQLProto.Parser
 
                 position++;
             }
+
             while (position < this.code.Length)
             {
                 var character = this.code[this.position];
@@ -260,15 +299,19 @@ namespace SQLProto.Parser
                 {
                     break;
                 }
+
                 if (this.IsSpecialChar(character))
                 {
                     break;
                 }
+
                 word += character;
                 position++;
             }
+
             return word;
         }
+
         void SkipWhiteChars()
         {
             while (position < code.Length)
