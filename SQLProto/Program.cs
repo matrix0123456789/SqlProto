@@ -11,6 +11,15 @@ namespace SQLProto
     {
         static void Main(string[] args)
         {
+            var db=Database.Create("test");
+            var table = db.CreateTable("tabela", new NamedType[]
+            {
+                new NamedType("a", DataType.Types.Integer),
+                new NamedType("b", DataType.Types.Decimal)
+            });
+            table.Insert(new IValue[] {new Data.Integer(1), new Data.Decimal(2),});
+            table.Insert(new IValue[] {new Data.Integer(200), new Data.Decimal(200),});
+            DrawTable(table.Columns, table.GetAllData().Result);
             while (true)
             {
                 var testQuery = Console.ReadLine();

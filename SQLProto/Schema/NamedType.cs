@@ -4,10 +4,11 @@ using System.Text;
 
 namespace SQLProto.Schema
 {
-    class NamedType
+    public class NamedType
     {
         public string Name;
         public DataType Type;
+
         public NamedType(string name, DataType type)
         {
             Name = name;

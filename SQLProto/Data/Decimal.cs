@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SQLProto.Data
@@ -16,6 +17,11 @@ namespace SQLProto.Data
         public override string ToString()
         {
             return _value.ToString();
+        }
+
+        public void Write(Stream stream)
+        {
+            (new BinaryWriter(stream)).Write(_value);
         }
 
         static public Decimal operator +(Decimal a, Decimal b)
@@ -36,6 +42,11 @@ namespace SQLProto.Data
         static public Decimal operator /(Decimal a, Decimal b)
         {
             return new Decimal(a._value / b._value);
+        }
+
+        public static IValue Deserialize(Stream stream)
+        {
+            return new Decimal((new BinaryReader(stream)).ReadDecimal());
         }
     }
 }
