@@ -10,6 +10,7 @@ namespace SQLProto.Parser.Queries
     class Select : IQuery
     {
         public List<NamedExpression> Selects = new List<NamedExpression>();
+        public List<SourceTable> From = new List<SourceTable>();
         public IEnumerable<NamedType> GetSchema()
         {
             return Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType()));

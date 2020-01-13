@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using SQLProto.Parser.Expressions.Literals;
 
 namespace SQLProto.Parser
 {
@@ -12,7 +13,7 @@ namespace SQLProto.Parser
     {
         private string code;
         private int position;
-        private static string[] keywords = {"as"};
+        private static string[] keywords = {"as", "from"};
 
         public Parser(string code)
         {
@@ -53,41 +54,61 @@ namespace SQLProto.Parser
 
         Select ReadSelect(IEnumerable<string> escapeStrings = null)
         {
+            escapeStrings = escapeStrings ?? new string[0];
             var query = new Select();
+            query.Selects = ReadSelectFields(escapeStrings.Concat(new[] {"from", "where"}));
+            
             while (position < code.Length)
             {
-                var currentChar = code[position];
-                if (this.IsWhiteChar(currentChar))
-                {
-                    this.position++;
-                    continue;
-                }
-                else if (this.IsAnyOfArray(escapeStrings))
+                SkipWhiteChars();
+                if (this.IsAnyOfArray(escapeStrings))
                 {
                     return query;
                 }
-                else
-                {
-                    var itemStart = position;
-                    var item = readNormal(new string[] {",", "as"});
-                    if (item != null)
-                    {
-                        var name = code.Substring(itemStart, position - itemStart);
-                        if (TryFindWord().ToLowerInvariant() == "as")
-                        {
-                            FindWord();
-                            name = FindWord();
-                        }
 
-                        SkipWhiteChars();
-                        if (position < code.Length && code[position] == ',')
-                            this.position++;
-                        query.Selects.Add(new Expressions.Literals.NamedExpression(name, item));
-                    }
+                if (TryFindWord().ToLowerInvariant() == "from")
+                {
+                    FindWord();
+                    var tableName = FindWord();
+                    query.From.Add(new SourceTable(tableName));
+                    continue;
                 }
+                throw new SyntaxError("");
             }
 
             return query;
+        }
+
+        private List<NamedExpression> ReadSelectFields(IEnumerable<string> escapeStrings = null)
+        {
+            var selects = new List<NamedExpression>();
+            escapeStrings = escapeStrings ?? new string[0];
+
+            while (position < code.Length)
+            {
+                SkipWhiteChars();
+                if (IsAnyOfArray(escapeStrings)) break;
+                var itemStart = position;
+                var item = readNormal(escapeStrings.Concat(new string[] {",", "as"}));
+                if (item != null)
+                {
+                    var name = code.Substring(itemStart, position - itemStart);
+
+                    SkipWhiteChars();
+                    if (TryFindWord().ToLowerInvariant() == "as")
+                    {
+                        FindWord();
+                        name = FindWord();
+                    }
+
+                    SkipWhiteChars();
+                    if (position < code.Length && code[position] == ',')
+                        this.position++;
+                    selects.Add(new Expressions.Literals.NamedExpression(name, item));
+                }
+            }
+
+            return selects;
         }
 
         IExpression readNormal(IEnumerable<string> escapeStrings = null, int escapePrecedence = 0)
@@ -133,26 +154,23 @@ namespace SQLProto.Parser
                             throw new NotImplementedException();
                     }
                 }
+
+                if (currentChar >= '0' && currentChar <= '9')
+                {
+                    finded = this.ReadNumber();
+                    continue;
+                }
                 else
                 {
-                    if (currentChar >= '0' && currentChar <= '9')
+                    var word = this.FindWord();
+                    if (keywords.Contains(word.ToLowerInvariant()))
                     {
-                        finded = this.ReadNumber();
+                        throw new SyntaxError("unexpected keyword");
                     }
+
                     else
                     {
-                        var word = this.FindWord();
-                        if (keywords.Contains(word.ToLowerInvariant()))
-                            switch (word.ToLower())
-                            {
-                                default:
-                                    throw new SyntaxError("unexpected keyword");
-                            }
-
-                        else
-                        {
-                            //finded = 
-                        }
+                        finded = new Identifier(word);
                     }
                 }
             }
@@ -229,7 +247,7 @@ namespace SQLProto.Parser
             return null;
         }
 
-        bool IsAnyOfArray(IEnumerable<string> arr)
+        bool IsAnyOfArray(IEnumerable<string>? arr)
         {
             if (arr == null) return false;
             foreach (var x in arr)
@@ -280,7 +298,7 @@ namespace SQLProto.Parser
         string TryFindWord()
         {
             string word = "";
-            var position = this.position;
+            var localPosition = this.position;
             while (true)
             {
                 if (this.position == this.code.Length)
@@ -292,9 +310,9 @@ namespace SQLProto.Parser
                 position++;
             }
 
-            while (position < this.code.Length)
+            while (localPosition < this.code.Length)
             {
-                var character = this.code[this.position];
+                var character = this.code[localPosition];
                 if (this.IsWhiteChar(character))
                 {
                     break;
@@ -306,7 +324,7 @@ namespace SQLProto.Parser
                 }
 
                 word += character;
-                position++;
+                localPosition++;
             }
 
             return word;
