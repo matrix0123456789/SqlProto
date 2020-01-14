@@ -11,9 +11,14 @@ namespace SQLProto.Parser.Queries
     {
         public List<NamedExpression> Selects = new List<NamedExpression>();
         public List<SourceTable> From = new List<SourceTable>();
-        public IEnumerable<NamedType> GetSchema()
+        public IEnumerable<NamedType> GetSchema(Context context)
         {
-            return Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType()));
+            var tables = From.Select(t =>
+            {
+                var db = Database.AllDatabases[t.DatabaseName ?? context.DefaultDB];
+                return (Name: t.TableName, Table: db.Tables[t.TableName]);
+            }).ToArray();
+            return Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType(tables)));
         }
 
         public IEnumerable<IValue> ExecuteRow()

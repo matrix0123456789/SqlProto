@@ -14,10 +14,10 @@ namespace SQLProto.Parser.Expressions.Operators
         public IExpression Right { get; }
 
         public IExpression Left { get; }
-        public override DataType GetDataType()
+        public override DataType GetDataType((string Name, Table Table)[] tables)
         {
-            var left = Left.GetDataType();
-            var right = Right.GetDataType();
+            var left = Left.GetDataType(tables);
+            var right = Right.GetDataType(tables);
             return DataType.Types.Decimal;
         }
 

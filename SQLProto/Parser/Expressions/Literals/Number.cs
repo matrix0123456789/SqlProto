@@ -18,7 +18,7 @@ namespace SQLProto.Parser.Expressions.Literals
             return new Integer(long.Parse(Integer));
         }
 
-        public DataType GetDataType()
+        public DataType GetDataType((string Name, Table Table)[] tables)
         {
             return DataType.Types.Integer;
         }

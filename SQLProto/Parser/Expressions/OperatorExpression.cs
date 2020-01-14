@@ -16,7 +16,7 @@ namespace SQLProto.Parser.Expressions
                 return null;
         }
 
-        public abstract DataType GetDataType();
+        public abstract DataType GetDataType((string Name, Table Table)[] tables);
         public abstract IValue Execute();
     }
 }

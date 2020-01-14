@@ -8,7 +8,7 @@ namespace SQLProto.Parser.Expressions
 {
     public interface IExpression
     {
-        DataType GetDataType();
+        DataType GetDataType((string Name, Table Table)[] tables);
         IValue Execute();
     }
 }
