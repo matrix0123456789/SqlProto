@@ -2,11 +2,13 @@
 {
     public class SourceTable
     {
-        public string Name;
+        public string DatabaseName;
+        public string TableName;
 
-        public SourceTable(string name)
+        public SourceTable(string name, string database = null)
         {
-            Name = name;
+            TableName = name;
+            DatabaseName = database;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace SQLProto.Parser
         private string code;
         private int position;
         private static string[] keywords = {"as", "from"};
+        private static char[] specialChars = {'.', ','};
 
         public Parser(string code)
         {
@@ -57,7 +58,7 @@ namespace SQLProto.Parser
             escapeStrings = escapeStrings ?? new string[0];
             var query = new Select();
             query.Selects = ReadSelectFields(escapeStrings.Concat(new[] {"from", "where"}));
-            
+
             while (position < code.Length)
             {
                 SkipWhiteChars();
@@ -69,10 +70,18 @@ namespace SQLProto.Parser
                 if (TryFindWord().ToLowerInvariant() == "from")
                 {
                     FindWord();
-                    var tableName = FindWord();
-                    query.From.Add(new SourceTable(tableName));
+                    var tableName = FindMultword();
+                    if (tableName.Count == 0)
+                        throw new SyntaxError("Empty table name");
+                    else if (tableName.Count == 1)
+                        query.From.Add(new SourceTable(tableName[0]));
+                    else if (tableName.Count == 2)
+                        query.From.Add(new SourceTable(tableName[1], tableName[0]));
+                    else
+                        throw new SyntaxError("Too much dots");
                     continue;
                 }
+
                 throw new SyntaxError("");
             }
 
@@ -232,8 +241,7 @@ namespace SQLProto.Parser
 
         bool IsSpecialChar(char character)
         {
-            return false; //todo
-            //return Syntax.SpecialChars.includes(char);
+            return specialChars.Contains(character);
         }
 
         OperatorDefinition? TryFindOperator()
@@ -264,16 +272,7 @@ namespace SQLProto.Parser
         string FindWord()
         {
             string word = "";
-            while (true)
-            {
-                if (this.position == this.code.Length)
-                    throw new SyntaxError("Unexpected end of file");
-                var character = this.code[this.position];
-                if (!this.IsWhiteChar(character))
-                    break;
-
-                this.position++;
-            }
+            SkipWhiteChars();
 
             while (this.position < this.code.Length)
             {
@@ -293,6 +292,27 @@ namespace SQLProto.Parser
             }
 
             return word;
+        }
+
+        List<string> FindMultword()
+        {
+            var ret = new List<string>();
+            while (this.position < this.code.Length)
+            {
+                SkipWhiteChars();
+                var word = FindWord();
+                if(word.Length==0)
+                    throw new SyntaxError("too many dots");
+                ret.Add(word);
+                SkipWhiteChars();
+                if (this.position >= this.code.Length || code[position] != '.')
+                    break;
+                else
+                    position++;
+                
+            }
+
+            return ret;
         }
 
         string TryFindWord()
