@@ -13,18 +13,25 @@ namespace SQLProto.Parser.Queries
         public List<SourceTable> From = new List<SourceTable>();
         public ((string Name, Table Table)[] tables, IEnumerable<NamedType> columns) GetSchema(Context context)
         {
+            var tables = GetTables(context);
+            var columns= Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType(tables)));
+            return (tables, columns);
+        }
+
+        private (string Name, Table Table)[] GetTables(Context context)
+        {
             var tables = From.Select(t =>
             {
                 var db = Database.AllDatabases[t.DatabaseName ?? context.DefaultDB];
                 return (Name: t.TableName, Table: db.Tables[t.TableName]);
             }).ToArray();
-            var columns= Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType(tables)));
-            return (tables, columns);
+            return tables;
         }
 
-        public IValue[] ExecuteRow(IValue[][] rowSource)
+        public IValue[] ExecuteRow(Context context, IValue[][] rowSource)
         {
-            return Selects.Select(x => x.Expression.Execute()).ToArray();
+            var tables = GetTables(context);
+            return Selects.Select(x => x.Expression.Execute(tables, rowSource)).ToArray();
         }
     }
 }

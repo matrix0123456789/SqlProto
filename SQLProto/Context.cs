@@ -22,7 +22,7 @@ namespace SQLProto
             var data=new List<IValue[]>();
             foreach (var rowSource in rows)
             {
-                var row = (parsedQuery as Select).ExecuteRow(rowSource);
+                var row = (parsedQuery as Select).ExecuteRow(this, rowSource);
                 data.Add(row);
             }
 

@@ -21,10 +21,10 @@ namespace SQLProto.Parser.Expressions.Operators
             return DataType.Types.Decimal;
         }
 
-        public override IValue Execute()
+        public override IValue Execute((string Name, Table Table)[] tables, IValue[][] rowSource)
         {
-            var left = Left.Execute();
-            var right = Right.Execute();
+            var left = Left.Execute(tables, rowSource);
+            var right = Right.Execute(tables, rowSource);
             Data.Decimal leftD;
             Data.Decimal rightD;
             if (left is Data.Integer)

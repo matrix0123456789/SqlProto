@@ -13,7 +13,7 @@ namespace SQLProto.Parser.Expressions.Literals
         public bool hasDot = false;
         public Number? Exponent = null;
 
-        public IValue Execute()
+        public IValue Execute((string Name, Table Table)[] tables, IValue[][] rowSource)
         {
             return new Integer(long.Parse(Integer));
         }
