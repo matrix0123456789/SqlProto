@@ -33,7 +33,7 @@ namespace SQLProto.Schema
             await Storage.Insert(values);
         }
 
-        public async Task<IEnumerable<IEnumerable<IValue>>> GetAllData()
+        public async Task<List<IValue[]>> GetAllData()
         {
             InitStorage();
             return await Storage.GetAllData();

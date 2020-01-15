@@ -88,7 +88,7 @@ namespace SQLProto.Storage
             Row = 1
         }
 
-        public async Task<IEnumerable<IEnumerable<IValue>>> GetAllData()
+        public async Task<List<IValue[]>> GetAllData()
         {
             await LoadTask;
             return Data;

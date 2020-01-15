@@ -11,19 +11,20 @@ namespace SQLProto.Parser.Queries
     {
         public List<NamedExpression> Selects = new List<NamedExpression>();
         public List<SourceTable> From = new List<SourceTable>();
-        public IEnumerable<NamedType> GetSchema(Context context)
+        public ((string Name, Table Table)[] tables, IEnumerable<NamedType> columns) GetSchema(Context context)
         {
             var tables = From.Select(t =>
             {
                 var db = Database.AllDatabases[t.DatabaseName ?? context.DefaultDB];
                 return (Name: t.TableName, Table: db.Tables[t.TableName]);
             }).ToArray();
-            return Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType(tables)));
+            var columns= Selects.Select(x => new NamedType(x.Name, x.Expression.GetDataType(tables)));
+            return (tables, columns);
         }
 
-        public IEnumerable<IValue> ExecuteRow()
+        public IValue[] ExecuteRow(IValue[][] rowSource)
         {
-            return Selects.Select(x => x.Expression.Execute());
+            return Selects.Select(x => x.Expression.Execute()).ToArray();
         }
     }
 }
