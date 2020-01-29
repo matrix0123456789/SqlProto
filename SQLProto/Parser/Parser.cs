@@ -43,6 +43,17 @@ namespace SQLProto.Parser
                     {
                         case "select":
                             return ReadSelect(escapeStrings);
+                        case "create":
+                            var type = FindWord();
+                            switch (type.ToLower())
+                            {
+                                case "database":
+                                    return ReadCreateDatabase(escapeStrings);
+                                case "table":
+                                    return ReadCreateTable(escapeStrings);
+                                default:
+                                    throw new SyntaxError("Object type unknown");
+                            }
 
                         default:
                             throw new SyntaxError("unexpected keyword");
@@ -51,6 +62,42 @@ namespace SQLProto.Parser
             }
 
             return finded;
+        }
+
+        private CreateDatabase ReadCreateDatabase(IEnumerable<string> escapeStrings)
+        {
+            var name = FindWord();
+            var query = new CreateDatabase(name);
+            while (position < code.Length)
+            {
+                SkipWhiteChars();
+                if (this.IsAnyOfArray(escapeStrings))
+                {
+                    return query;
+                }
+
+                throw new SyntaxError("");
+            }
+
+            return query;
+        }
+
+        private CreateTable ReadCreateTable(IEnumerable<string> escapeStrings)
+        {
+            var name = FindWord();
+            var query = new CreateTable(name);
+            while (position < code.Length)
+            {
+                SkipWhiteChars();
+                if (this.IsAnyOfArray(escapeStrings))
+                {
+                    return query;
+                }
+
+                throw new SyntaxError("");
+            }
+
+            return query;
         }
 
         Select ReadSelect(IEnumerable<string> escapeStrings = null)
@@ -301,7 +348,7 @@ namespace SQLProto.Parser
             {
                 SkipWhiteChars();
                 var word = FindWord();
-                if(word.Length==0)
+                if (word.Length == 0)
                     throw new SyntaxError("too many dots");
                 ret.Add(word);
                 SkipWhiteChars();
@@ -309,7 +356,6 @@ namespace SQLProto.Parser
                     break;
                 else
                     position++;
-                
             }
 
             return ret;

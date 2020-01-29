@@ -11,9 +11,9 @@ namespace SQLProto
     {
         static void Main(string[] args)
         {
-            var context=new Context();
+            var context = new Context();
             context.DefaultDB = "test";
-            var db=Database.Create("test");
+            var db = Database.Create("test");
             var table = db.CreateTable("tabela", new NamedType[]
             {
                 new NamedType("a", DataType.Types.Integer),
@@ -25,8 +25,9 @@ namespace SQLProto
             while (true)
             {
                 var testQuery = Console.ReadLine();
-                var result =  context.ExecuteQuery(testQuery).Result;
-                DrawTable(result.schema, result.data);
+                var result = context.ExecuteQuery(testQuery).Result;
+                if (result != default)
+                    DrawTable(result.schema, result.data);
             }
         }
 
@@ -45,11 +46,13 @@ namespace SQLProto
                     {
                         name = name.Substring(0, charsForOne);
                     }
+
                     while (name.Length < charsForOne)
                         name += " ";
                     Console.Write(name);
                     first = false;
                 }
+
                 Console.WriteLine();
                 for (var i = 0; i < (charsForOne + 1) * schemaArray.Length - 1; i++)
                     Console.Write('-');
@@ -66,6 +69,7 @@ namespace SQLProto
                     {
                         cell = cell.Substring(0, charsForOne);
                     }
+
                     while (cell.Length < charsForOne)
                         cell += " ";
                     Console.Write(cell);

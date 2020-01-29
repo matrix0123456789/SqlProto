@@ -15,18 +15,34 @@ namespace SQLProto
         {
             var parser = new Parser.Parser(query);
             var parsedQuery = parser.ReadQuery();
-            var schema = (parsedQuery as Select).GetSchema(this);
-            var tableDataAsync = schema.tables.Select(async t => (await t.Table.GetAllData()).ToArray());
-            var tableData = await Task.WhenAll(tableDataAsync);
-            var rows = CartesianProduck(tableData);
-            var data=new List<IValue[]>();
-            foreach (var rowSource in rows)
+            if (parsedQuery is Select)
             {
-                var row = (parsedQuery as Select).ExecuteRow(this, rowSource);
-                data.Add(row);
-            }
+                var schema = (parsedQuery as Select).GetSchema(this);
+                var tableDataAsync = schema.tables.Select(async t => (await t.Table.GetAllData()).ToArray());
+                var tableData = await Task.WhenAll(tableDataAsync);
+                var rows = CartesianProduck(tableData);
+                var data = new List<IValue[]>();
+                foreach (var rowSource in rows)
+                {
+                    var row = (parsedQuery as Select).ExecuteRow(this, rowSource);
+                    data.Add(row);
+                }
 
-            return (schema.columns, data);
+                return (schema.columns, data);
+            }
+            else
+            {
+                if (parsedQuery is CreateDatabase database)
+                {
+                    Database.Create(database.Name);
+                }
+                else if (parsedQuery is CreateTable table)
+                {
+                    Database.AllDatabases[this.DefaultDB].CreateTable(table.Name, table.Columns);
+                }
+
+                return default;
+            }
         }
 
         public IEnumerable<IValue[][]> CartesianProduck(IValue[][][] tableData)
@@ -73,6 +89,7 @@ namespace SQLProto
                         return true;
                     }
                 }
+
                 return true;
             }
         }
