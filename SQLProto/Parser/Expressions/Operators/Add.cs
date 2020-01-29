@@ -14,6 +14,8 @@ namespace SQLProto.Parser.Expressions.Operators
         public IExpression Right { get; }
 
         public IExpression Left { get; }
+        
+        public override OperatorDefinition Definition => OperatorDefinition.Add;
         public override DataType GetDataType((string Name, Table Table)[] tables)
         {
             var left = Left.GetDataType(tables);

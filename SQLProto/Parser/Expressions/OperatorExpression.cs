@@ -6,7 +6,7 @@ namespace SQLProto.Parser.Expressions
 {
     public abstract class OperatorExpression : IExpression
     {
-        public OperatorDefinition Definition { get; }
+        public abstract OperatorDefinition Definition { get; }
 
         public static OperatorExpression Create(OperatorDefinition definition, IExpression? Left, IExpression? Right)
         {
