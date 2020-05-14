@@ -6,7 +6,11 @@ namespace SQLProto.Schema
 {
     public class DataType
     {
-        public Types Type;
+        public Types Type { get; set; }
+
+        private DataType()
+        {
+        }
 
         public DataType(Types type)
         {
@@ -15,12 +19,15 @@ namespace SQLProto.Schema
 
         public enum Types
         {
-            Integer, Decimal
+            Integer,
+            Decimal
         }
+
         static public implicit operator DataType(Types type)
         {
             return new DataType(type);
         }
+
         static public explicit operator Types(DataType type)
         {
             return type.Type;

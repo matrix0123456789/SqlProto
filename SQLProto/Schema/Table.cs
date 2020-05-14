@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using SQLProto.Data;
 using SQLProto.Storage;
@@ -7,6 +8,13 @@ namespace SQLProto.Schema
 {
     public class Table
     {
+        /// <summary>
+        /// deserialization
+        /// </summary>
+        private Table()
+        {
+        }
+
         public Table(Database database, string name, IEnumerable<NamedType> columns)
         {
             this.Database = database;
@@ -17,9 +25,8 @@ namespace SQLProto.Schema
         public IEnumerable<NamedType> Columns { get; set; }
 
         public string Name { get; set; }
-
-        public Database Database { get; set; }
-        public TableStorage Storage { get; set; }
+        [JsonIgnore] public Database Database { get; set; }
+        [JsonIgnore] public TableStorage Storage { get; set; }
 
         void InitStorage()
         {

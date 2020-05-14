@@ -6,8 +6,12 @@ namespace SQLProto.Schema
 {
     public class NamedType
     {
-        public string Name;
-        public DataType Type;
+        public string Name { get; set; }
+        public DataType Type { get; set; }
+
+        private NamedType()
+        {
+        }
 
         public NamedType(string name, DataType type)
         {

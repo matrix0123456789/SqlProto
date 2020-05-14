@@ -223,7 +223,6 @@ namespace SQLProto.Parser
                     {
                         throw new SyntaxError("unexpected keyword");
                     }
-
                     else
                     {
                         finded = new Identifier(word);
