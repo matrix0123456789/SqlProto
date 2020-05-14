@@ -56,6 +56,9 @@
         <e p="Storage" t="Include">
           <e p="TableStorage.cs" t="Include" />
         </e>
+        <e p="Utils" t="Include">
+          <e p="Extensions.cs" t="Include" />
+        </e>
       </e>
       <e p="SQLProto.sln" t="IncludeFlat" />
     </e>

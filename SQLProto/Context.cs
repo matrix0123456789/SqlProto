@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using SQLProto.Data;
 using SQLProto.Parser.Queries;
 using SQLProto.Schema;
+using SQLProto.Storage;
 
 namespace SQLProto
 {

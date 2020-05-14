@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using SQLProto.Parser.Expressions.Literals;
+using SQLProto.Schema;
+using SQLProto.Utils;
 
 namespace SQLProto.Parser
 {
@@ -14,7 +16,7 @@ namespace SQLProto.Parser
         private string code;
         private int position;
         private static string[] keywords = {"as", "from"};
-        private static char[] specialChars = {'.', ','};
+        private static char[] specialChars = {'.', ',', '(', ')'};
 
         public Parser(string code)
         {
@@ -86,6 +88,17 @@ namespace SQLProto.Parser
         {
             var name = FindWord();
             var query = new CreateTable(name);
+
+            SkipWhiteChars();
+            if (IsAnyOfArray(new[] {"("}))
+            {
+                position++;
+            }
+            else
+            {
+                throw new SyntaxError("");
+            }
+
             while (position < code.Length)
             {
                 SkipWhiteChars();
@@ -94,10 +107,40 @@ namespace SQLProto.Parser
                     return query;
                 }
 
-                throw new SyntaxError("");
+                query.Columns.Add(ReadColumnDefinition(escapeStrings.OrEmpty().Concat(new[] {",", ")"})));
             }
 
             return query;
+        }
+
+        private NamedType ReadColumnDefinition(IEnumerable<string> escapeStrings)
+        {
+            SkipWhiteChars();
+            if (this.IsAnyOfArray(escapeStrings))
+            {
+                throw new SyntaxError("");
+            }
+
+            var name = FindWord();
+            SkipWhiteChars();
+            if (this.IsAnyOfArray(escapeStrings))
+            {
+                throw new SyntaxError("");
+            }
+
+            var type = FindWord();
+            var ret = new NamedType(name, Enum.Parse<DataType.Types>(type));
+            while (position < code.Length)
+            {
+                if (this.IsAnyOfArray(escapeStrings))
+                {
+                    return ret;
+                }
+
+                position++;
+            }
+
+            return ret;
         }
 
         Select ReadSelect(IEnumerable<string> escapeStrings = null)
