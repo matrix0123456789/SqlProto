@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace SQLProto.Parser.Queries
 {
-    class Select : IQuery
+    public class Select : IQuery
     {
         public List<NamedExpression> Selects = new List<NamedExpression>();
         public List<SourceTable> From = new List<SourceTable>();

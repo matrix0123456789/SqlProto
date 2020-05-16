@@ -20,7 +20,8 @@ namespace SQLProto.Schema
         public enum Types
         {
             Integer,
-            Decimal
+            Decimal,
+            Text
         }
 
         static public implicit operator DataType(Types type)

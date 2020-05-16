@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLProto", "SQLProto\SQLProto.csproj", "{9EB1FE2A-CEF2-448E-925C-16646D41B160}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlProto.Tests", "SqlProto.Tests\SqlProto.Tests.csproj", "{9685F17D-7FAD-4E9C-A31A-36B194D73333}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9EB1FE2A-CEF2-448E-925C-16646D41B160}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB1FE2A-CEF2-448E-925C-16646D41B160}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EB1FE2A-CEF2-448E-925C-16646D41B160}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9685F17D-7FAD-4E9C-A31A-36B194D73333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9685F17D-7FAD-4E9C-A31A-36B194D73333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9685F17D-7FAD-4E9C-A31A-36B194D73333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9685F17D-7FAD-4E9C-A31A-36B194D73333}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

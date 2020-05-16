@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SQLProto.Parser.Expressions.Literals
 {
-    class NamedExpression
+    public class NamedExpression
     {
         public string Name;
         public IExpression Expression;

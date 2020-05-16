@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SQLProto.Parser.Expressions.Literals
 {
-    class Number : IExpression
+    public class Number : IExpression
     {
         public string Integer = "";
         public string Fraction = "";

@@ -45,6 +45,8 @@ namespace SQLProto.Parser
                     {
                         case "select":
                             return ReadSelect(escapeStrings);
+                        case "insert":
+                            return ReadInsert(escapeStrings);
                         case "create":
                             var type = FindWord();
                             switch (type.ToLower())
@@ -64,6 +66,23 @@ namespace SQLProto.Parser
             }
 
             return finded;
+        }
+
+        private List<T> ReadSeries<T>(Func<T> func, IEnumerable<string> escapeStrings)
+        {
+            var ret = new List<T>();
+            while (position < code.Length)
+            {
+                SkipWhiteChars();
+                if (this.IsAnyOfArray(escapeStrings))
+                {
+                    break;
+                }
+
+                ret.Add(func());
+            }
+
+            return ret;
         }
 
         private CreateDatabase ReadCreateDatabase(IEnumerable<string> escapeStrings)
@@ -99,16 +118,8 @@ namespace SQLProto.Parser
                 throw new SyntaxError("");
             }
 
-            while (position < code.Length)
-            {
-                SkipWhiteChars();
-                if (this.IsAnyOfArray(escapeStrings))
-                {
-                    return query;
-                }
-
-                query.Columns.Add(ReadColumnDefinition(escapeStrings.OrEmpty().Concat(new[] {",", ")"})));
-            }
+            query.Columns = ReadSeries(() => ReadColumnDefinition(escapeStrings.OrEmpty().Concat(new[] {",", ")"})),
+                escapeStrings.OrEmpty().Concat(new[] {")"}));
 
             return query;
         }
@@ -129,7 +140,8 @@ namespace SQLProto.Parser
             }
 
             var type = FindWord();
-            var ret = new NamedType(name, Enum.Parse<DataType.Types>(type));
+
+            var ret = new NamedType(name, ParseType(type));
             while (position < code.Length)
             {
                 if (this.IsAnyOfArray(escapeStrings))
@@ -141,6 +153,19 @@ namespace SQLProto.Parser
             }
 
             return ret;
+        }
+
+        private static DataType.Types ParseType(string type)
+        {
+            switch (type.ToLower())
+            {
+                case "int":
+                    return DataType.Types.Integer;
+                case "text":
+                    return DataType.Types.Text;
+                default:
+                    throw new SyntaxError("");
+            }
         }
 
         Select ReadSelect(IEnumerable<string> escapeStrings = null)
@@ -180,18 +205,14 @@ namespace SQLProto.Parser
 
         private List<NamedExpression> ReadSelectFields(IEnumerable<string> escapeStrings = null)
         {
-            var selects = new List<NamedExpression>();
             escapeStrings = escapeStrings ?? new string[0];
-
-            while (position < code.Length)
+            var selects = ReadSeries(() =>
             {
-                SkipWhiteChars();
-                if (IsAnyOfArray(escapeStrings)) break;
                 var itemStart = position;
                 var item = readNormal(escapeStrings.Concat(new string[] {",", "as"}));
                 if (item != null)
                 {
-                    var name = code.Substring(itemStart, position - itemStart);
+                    var name = code.Substring(itemStart, position - itemStart).Trim();
 
                     SkipWhiteChars();
                     if (TryFindWord().ToLowerInvariant() == "as")
@@ -203,11 +224,64 @@ namespace SQLProto.Parser
                     SkipWhiteChars();
                     if (position < code.Length && code[position] == ',')
                         this.position++;
-                    selects.Add(new Expressions.Literals.NamedExpression(name, item));
+                    return new Expressions.Literals.NamedExpression(name, item);
                 }
-            }
+                else
+                {
+                    throw new Exception();
+                }
+            }, escapeStrings);
 
             return selects;
+        }
+
+        Insert ReadInsert(IEnumerable<string> escapeStrings = null)
+        {
+            var into = FindWord();
+            if (into.ToLower() != "into")
+                throw new SyntaxError("");
+
+            var tableName = FindWord();
+            var ret = new Insert() {TableName = tableName};
+            SkipWhiteChars();
+            if (code[position] == '(')
+            {
+                position++;
+                ret.Columns = ReadSeries(() =>
+                {
+                    var column = FindWord();
+                    SkipWhiteChars();
+                    if (code[position] == ',') position++;
+                    return column;
+                }, escapeStrings.AndAlso(")"));
+                position++;
+            }
+            else
+            {
+                throw new SyntaxError("");
+            }
+
+            var values = FindWord();
+            if (values.ToLower() != "values")
+                throw new SyntaxError("");
+            SkipWhiteChars();
+            if (code[position] == '(')
+            {
+                position++;
+                ret.Values = ReadSeries(() =>
+                {
+                    var ret2 = readNormal(escapeStrings.AndAlso(",", ")"));
+                    if (code[position] == ',')
+                        position++;
+                    return ret2;
+                }, escapeStrings.AndAlso(")"));
+            }
+            else
+            {
+                throw new SyntaxError("");
+            }
+
+            return ret;
         }
 
         IExpression readNormal(IEnumerable<string> escapeStrings = null, int escapePrecedence = 0)
@@ -349,7 +423,7 @@ namespace SQLProto.Parser
             if (arr == null) return false;
             foreach (var x in arr)
             {
-                if (this.position + x.Length < this.code.Length && this.code.Substring(this.position, x.Length) == x)
+                if (this.position + x.Length <= this.code.Length && this.code.Substring(this.position, x.Length) == x)
                 {
                     return true;
                 }
