@@ -52,9 +52,9 @@ namespace SqlProto.Tests.Parser
             var parsed = parsedInterface as CreateTable;
             Assert.Equal("test", parsed.Name);
             Assert.Equal("a", parsed.Columns[0].Name);
-            Assert.Equal(DataType.Types.Integer, parsed.Columns[0].Type);
+            Assert.Equal(DataType.Types.Integer, parsed.Columns[0].Type.Type);
             Assert.Equal("b", parsed.Columns[1].Name);
-            Assert.Equal(DataType.Types.Text, parsed.Columns[1].Type);
+            Assert.Equal(DataType.Types.Text, parsed.Columns[1].Type.Type);
         }
         [Fact]
         public void ReadQuery5()

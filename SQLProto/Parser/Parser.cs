@@ -118,7 +118,12 @@ namespace SQLProto.Parser
                 throw new SyntaxError("");
             }
 
-            query.Columns = ReadSeries(() => ReadColumnDefinition(escapeStrings.OrEmpty().Concat(new[] {",", ")"})),
+            query.Columns = ReadSeries(() =>
+                {
+                    var column= ReadColumnDefinition(escapeStrings.OrEmpty().Concat(new[] {",", ")"}));
+                    position++;
+                    return column;
+                },
                 escapeStrings.OrEmpty().Concat(new[] {")"}));
 
             return query;
