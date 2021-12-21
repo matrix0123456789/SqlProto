@@ -10,10 +10,23 @@ namespace SQLProto.Api.Rest
 {
     public class HttpRequest
     {
-        public Dictionary<string, string> Headers=new Dictionary<string, string>();
+        public Dictionary<string, string> Headers = new Dictionary<string, string>();
         public string Method { get; set; }
         private string path;
         private EndPoint clientLocalEndPoint;
+        private string body;
+
+        public async Task<string> GetBodyText()
+        {
+            if (body == null)
+            {
+                var bytes = new byte[long.Parse(Headers["content-length"])];
+                await stream.ReadAsync(bytes, 0, bytes.Length);
+                body = System.Text.UTF8Encoding.UTF8.GetString(bytes);
+            }
+            return body;
+        }
+
         private Stream stream;
 
         public Uri Uri => new Uri("http://" +

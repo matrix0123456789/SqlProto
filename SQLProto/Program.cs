@@ -1,4 +1,5 @@
-﻿using SQLProto.Data;
+﻿using SQLProto.Api.Rest;
+using SQLProto.Data;
 using SQLProto.Parser.Queries;
 using SQLProto.Schema;
 using System;
@@ -12,6 +13,7 @@ namespace SQLProto
         static void Main(string[] args)
         {
             Database.Load();
+            new HttpServer(8080);
             var context = new Context();
             context.DefaultDB = "test";
             // var db = Database.Create("test");

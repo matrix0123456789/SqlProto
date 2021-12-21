@@ -68,6 +68,26 @@ namespace SqlProto.Tests.Parser
             Assert.Equal("b", parsed.Columns[1]);
             Assert.Equal("1", (parsed.Values[0] as Number)?.Integer);
             Assert.Equal("2", (parsed.Values[1] as Number)?.Integer);
+        }    
+        [Fact]
+        public void ReadQuery6()
+        {
+            var parsedInterface = new SQLProto.Parser.Parser("Select * from d").ReadQuery();
+            Assert.IsType<Select>(parsedInterface);
+            var parsed = parsedInterface as Select;
+            //TODO fix
+            //Assert.True((parsed.Selects[0].Expression as Identifier)?.Name);
+        }
+        [Fact]
+        public void ReadQuery7()
+        {
+            var parsedInterface = new SQLProto.Parser.Parser("Select 2 + 3").ReadQuery();
+            Assert.IsType<Select>(parsedInterface);
+            var parsed = parsedInterface as Select;
+            Assert.Equal("2 + 3", parsed.Selects[0].Name);
+            var expression = parsed.Selects[0].Expression as Add;
+            Assert.Equal("2", (expression.Left as Number)?.Integer);
+            Assert.Equal("3", (expression.Right as Number)?.Integer);
         }
     }
 }

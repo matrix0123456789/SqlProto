@@ -62,7 +62,7 @@ namespace SQLProto.Utils
                 bytes.Add(readedByte[0]);
             }
 
-            if (bytes.Last() == '\r')
+            if (bytes.LastOrDefault() == '\r')
             {
                 return Encoding.UTF8.GetString(bytes.Take(bytes.Count - 1).ToArray());
             }

@@ -77,6 +77,9 @@ namespace SQLProto
 
             public bool Increment()
             {
+                if (Index.Length == 0)
+                    return false;
+
                 for (int i = Index.Length - 1; i >= 0; i--)
                 {
                     Index[i]++;
