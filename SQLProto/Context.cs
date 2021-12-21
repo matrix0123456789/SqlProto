@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,6 +32,26 @@ namespace SQLProto
                 }
 
                 return (schema.columns, data);
+            }
+            else if (parsedQuery is Insert insert)
+            {
+                var table = Database.AllDatabases[this.DefaultDB].Tables[insert.TableName];
+                var row = table.Columns.Select(c => c.Type.GetDefault()).ToArray();
+                var columns = table.Columns.ToArray();
+                var i = 0;
+                foreach (var colName in insert.Columns)
+                {
+                    var columnIndex = Array.FindIndex(columns, c => c.Name == colName);
+                    var value = insert.Values[i];
+                    var valueExecuted = value.Execute(Array.Empty<(string,Table)>(), Array.Empty<IValue[]>());
+                    if (valueExecuted.GetType() != row[columnIndex].GetType())
+                        throw new NotImplementedException();
+
+                    row[columnIndex] = valueExecuted;
+                    i++;
+                }
+                table.Insert(row);
+                return default;
             }
             else
             {

@@ -16,7 +16,7 @@ namespace SQLProto.Storage
         public TableStorage(Table table)
         {
             this.Stream = new System.IO.FileStream(Path.Join(Directory, table.Database.Name, table.Name, "data.bin"),
-                FileMode.Open);
+                FileMode.OpenOrCreate);
             this.LoadTask = Task.Run(() =>
             {
                 lock (Stream)

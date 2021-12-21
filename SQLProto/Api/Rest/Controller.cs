@@ -15,7 +15,7 @@ namespace SQLProto.Api.Rest
                 var context = new Context();
                 context.DefaultDB = "test";
                 var (resultColumns, resultData) = context.ExecuteQuery(await request.GetBodyText()).Result;
-                var result = new { columns = resultColumns, data = resultData };
+                var result = new { columns = resultColumns, data = resultData?.Select(x=>x.Select(y=>y?.ToString())) };
                 return new HttpResponse(HttpStatusCode.OK, System.Text.Json.JsonSerializer.Serialize(result));
 
             }
